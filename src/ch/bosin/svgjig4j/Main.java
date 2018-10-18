@@ -169,9 +169,23 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        SparseVector startPoint = SparseVector.fromArray(new double[]{0,0});
-        SparseVector endPoint = SparseVector.fromArray(new double[]{0,100});
+        int width = 1000;
+        int height = 600;
+        double randomizeBy = 0.1;
 
+
+        SparseVector startPoint = SparseVector.fromArray(new double[]{0,100});
+        SparseVector endPoint = SparseVector.fromArray(new double[]{100,100});
+
+        SparseVector[][] yel = new SparseVector[10][10];
+        for(int y = 1; y < 10; y++) {
+            SparseVector[] xel = new SparseVector[10];
+            for(int x = 0; x < 10; x++) {
+                Arrays.fill(xel, SparseVector.fromArray(new double[]{x*100, y*100}));
+            }
+            yel[y]=xel;
+        }
+        System.out.println(Arrays.toString(yel));
         new Main(startPoint, endPoint).run();
     }
 }
