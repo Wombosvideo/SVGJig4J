@@ -128,37 +128,37 @@ public class Main {
         // Moves cursor to given start point (0|0)
         path.append(this.moveTo(0.00, 0.00));
         // Draws a line to (0.3|0)
-        path.append(this.lineTo(0.30, 0.00));
+        path.append(this.lineTo(0.40, 0.00));
 
         // Draws a curve to (0.23|0.2)
         path.append(this.curveTo(
-                0.45, 0.00,
-                0.28, 0.10,
-                0.23, 0.20
+                0.475, 0.00,
+                0.39, 0.05,
+                0.365, 0.10
         ));
         // Draws a curve to (0.33|0.4)
         path.append(this.curveTo(
-                0.19, 0.28,
-                0.25, 0.36,
-                0.33, 0.40
+                0.345, 0.14,
+                0.375, 0.18,
+                0.415, 0.20
         ));
         // Draws a curve to (0.67|0.4)
         path.append(this.curveTo(
-                0.43, 0.45,
-                0.57, 0.45,
-                0.67, 0.40
+                0.465, 0.225,
+                0.535, 0.225,
+                0.585, 0.20
         ));
         // Draws a curve to (0.77|0.2)
         path.append(this.curveTo(
-                0.75, 0.36,
-                0.81, 0.28,
-                0.77, 0.20
+                0.625, 0.18,
+                0.655, 0.14,
+                0.635, 0.10
         ));
         // Draws a curve to (0.7|0)
         path.append(this.curveTo(
-                0.72, 0.10,
-                0.55, 0.00,
-                0.70, 0.00
+                0.61, 0.05,
+                0.525, 0.00,
+                0.60, 0.00
         ));
 
         // Draws a line to given end point (1|0)
