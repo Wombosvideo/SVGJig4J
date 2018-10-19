@@ -6,6 +6,7 @@ import org.la4j.vector.SparseVector;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -173,7 +174,19 @@ public class Main {
         int height = 600;
         double randomizeBy = 0.1;
 
+        SparseVector startPoint = SparseVector.fromArray(new double[] {0, 0});
+        SparseVector endPoint = SparseVector.fromArray(new double[] {width, height});
 
+        Vector middle = middleRnd(startPoint, endPoint, randomizeBy);
+        System.out.println(middle.mkString(NumberFormat.getNumberInstance(), ","));
+
+        Vector[] mid = middleEdgeRnd(startPoint, Vector.fromArray(new double[]{width, 0}), Vector.fromArray(new double[]{0, height}), endPoint, middle, randomizeBy);
+        Vector m1 = mid[0];
+        Vector m2 = mid[1];
+
+        System.out.println(m1.mkString(NumberFormat.getNumberInstance(), ","));
+        System.out.println(m2.mkString(NumberFormat.getNumberInstance(), ","));
+/*
         SparseVector startPoint = SparseVector.fromArray(new double[]{0,100});
         SparseVector endPoint = SparseVector.fromArray(new double[]{100,100});
 
@@ -187,5 +200,36 @@ public class Main {
         }
         System.out.println(Arrays.toString(yel));
         new Main(startPoint, endPoint).run();
+*/
+    }
+
+    private static Vector middleRnd(Vector p1, Vector p2, double randomizeBy) {
+        Vector r1 = p2.subtract(p1);
+        double d1 = r1.norm();
+        Vector e1 = r1.divide(d1);
+        double rnd = new Random().nextDouble();
+        double d1_ = d1/2 + rnd*randomizeBy*d1;
+        Vector out = e1.multiply(d1_).add(p1);
+        return out;
+    }
+
+    private static Vector[] middleEdgeRnd(Vector p1o1, Vector p2, Vector p3, Vector p4o2, Vector m1, double randomizeBy){
+        Vector r1 = p2.subtract(p1o1);
+        Vector r2 = p4o2.subtract(p3);
+        Vector r01 = m1.subtract(p1o1);
+        Vector r02 = p4o2.subtract(p1o1);
+        double d1 = r1.norm();
+        double d2 = r2.norm();
+        double d01 = r01.norm();
+        double d02 = r02.norm();
+        double d0 = d01/d02;
+        Vector e1 = r1.divide(d1);
+        Vector e2 = r2.divide(d2);
+        Vector wo1 = e1.multiply(d0);
+        Vector wo2 = e2.multiply(d0);
+        double rnd = new Random().nextDouble();
+        double d1_ = (((d1+d2)/2)/2 * d0) + rnd*randomizeBy*((d1+d2)/2);
+        Vector[] out = {e1.multiply(d1_).add(p1o1), e2.multiply(d1_).add(p3)};
+        return out;
     }
 }
