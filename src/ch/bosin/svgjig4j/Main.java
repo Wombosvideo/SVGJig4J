@@ -5,13 +5,11 @@ import org.la4j.Vector;
 import org.la4j.vector.SparseVector;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -72,12 +70,24 @@ public class Main {
         writeSVG(List.of(svg.getPathAndClear()), "end", svg.width, svg.height);
     }
 
+    public static ArrayList<Vector> sortedX(ArrayList<Vector> unsorted) {
+        ArrayList<Vector> sorted = (ArrayList<Vector>)unsorted.clone();
+        sorted.sort(Comparator.comparingDouble((l) -> l.get(0)));
+        return sorted;
+    }
+
+    public static ArrayList<Vector> sortedY(ArrayList<Vector> unsorted) {
+        ArrayList<Vector> sorted = (ArrayList<Vector>)unsorted.clone();
+        sorted.sort(Comparator.comparingDouble((l) -> l.get(1)));
+        return sorted;
+    }
+
     public static void main(String[] args) {
         int width = 1000;
         int height = 600;
 
-        int piecesX = 12; // aka. rows
-        int piecesY = 9; // aka. columns
+        int piecesX = 11; // aka. rows
+        int piecesY = 8; // aka. columns
 
         double randomizeBy = 0.1;
 
@@ -85,9 +95,21 @@ public class Main {
         SparseVector endPoint = SparseVector.fromArray(new double[] {width, height});
         SVGHelper svg = new SVGHelper(startPoint, endPoint);
 
-        Vector[][] storage = new Vector[piecesY+1][piecesX+1];
+        Vector[][] storage = new Vector[piecesY+2][piecesX+2];
         ArrayList<String> circles = new ArrayList<>();
+        ArrayList<Vector> circlesV = new ArrayList<>();
 
+        circles.add("<circle cx=\"" + 0 + "\" cy=\"" + 0 + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/12) + "\"/>\n");
+        circles.add("<circle cx=\"" + width + "\" cy=\"" + 0 + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/12) + "\"/>\n");
+        circles.add("<circle cx=\"" + 0 + "\" cy=\"" + height + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/12) + "\"/>\n");
+        circles.add("<circle cx=\"" + width + "\" cy=\"" + height + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/12) + "\"/>\n");
+
+        storage[0][0] = startPoint;
+        storage[0][piecesX] = Vector.fromArray(new double[] {0, width});
+        storage[piecesY][0] = Vector.fromArray(new double[] {height, 0});
+        storage[piecesY][piecesX] = Vector.fromArray(new double[] {height, 0});
+
+/*
         for(int x = 0; x < piecesX-1; x++) {
             double vx = Integer.valueOf(x).doubleValue() * (Integer.valueOf(width).doubleValue() / Integer.valueOf(piecesX-2).doubleValue());
             storage[0][x] = Vector.fromArray(new double[] { vx, 0 });
@@ -95,6 +117,32 @@ public class Main {
             circles.add("<circle cx=\"" + vx + "\" cy=\"" + 0 + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/10) + "\"/>\n");
             circles.add("<circle cx=\"" + vx + "\" cy=\"" + height + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/10) + "\"/>\n");
         }
+*/
+
+        ArrayList<Vector> topRow = sortedX(middleCntd(SparseVector.fromArray(new double[] {0, 0}), SparseVector.fromArray(new double[] {width, 0}), randomizeBy, piecesX, piecesX, 1));
+        circlesV.addAll(topRow);
+        for(int i = 0; i < piecesX-1; i++) {
+            storage[0][i+1] = topRow.get(i);
+        }
+
+        ArrayList<Vector> bottomRow = sortedX(middleCntd(SparseVector.fromArray(new double[] {0, height}), SparseVector.fromArray(new double[] {width, height}), randomizeBy, piecesX, piecesX, 1));
+        circlesV.addAll(bottomRow);
+        for(int i = 0; i < piecesX-1; i++) {
+            storage[piecesY][i+1] = bottomRow.get(i);
+        }
+
+        ArrayList<Vector> leftRow = sortedY(middleCntd(SparseVector.fromArray(new double[] {0, 0}), SparseVector.fromArray(new double[] {0, height}), randomizeBy, piecesY, piecesY, -1));
+        circlesV.addAll(leftRow);
+        for(int i = 0; i < piecesY-1; i++) {
+            storage[i+1][0] = leftRow.get(i);
+        }
+
+        ArrayList<Vector> rightRow = sortedY(middleCntd(SparseVector.fromArray(new double[] {width, 0}), SparseVector.fromArray(new double[] {width, height}), randomizeBy, piecesY, piecesY, -1));
+        circlesV.addAll(rightRow);
+        for(int i = 0; i < piecesY-1; i++) {
+            storage[i+1][piecesX] = rightRow.get(i);
+        }
+
 /*        for(int y = 1; y < piecesY; y++){
             double vy = Integer.valueOf(y).doubleValue() * (Integer.valueOf(height).doubleValue() / Integer.valueOf(piecesY).doubleValue());
             storage[y][0] = Vector.fromArray(new double[] { 0, vy });
@@ -103,32 +151,42 @@ public class Main {
             circles.add("<circle cx=\"" + width + "\" cy=\"" + vy + "\" r=\"" + (((width/piecesX + height/piecesY)/2)/10) + "\"/>\n");
         }*/
 
-        System.out.println(Arrays.deepToString(storage));
+        //System.out.println(Arrays.deepToString(storage));
 
         // Write to output-stg_01.svg
         writeSVG(circles, "stg_01", width, height);
 
         int randomIndexX = 8;
+        /*
         circles.set(2 * randomIndexX, circles.get(2 * randomIndexX).replaceAll("\\/>", " class=\"b\"\\/>"));
         circles.set(2 * randomIndexX + 1, circles.get(2 * randomIndexX + 1).replaceAll("\\/>", " class=\"b\"\\/>"));
+        */
+        Vector posTop = circlesV.get(randomIndexX);
+        Vector posBottom = circlesV.get(piecesX + randomIndexX);
+
 
         writeSVG(circles, "stg_02", width, height);
 
-        Vector posTop = storage[0][randomIndexX];
-        Vector posBottom = storage[piecesY][randomIndexX];
+        int[]   v1 = {0, 0},
+                v2 = {piecesY, 0},
+                v3 = {0, piecesX},
+                v4 = {piecesY, piecesX};
+
+        if(storage[v2[0]][v2[1]].subtract(storage[v1[0]][v1[1]]).norm() < storage[v3[0]][v3[1]].subtract(storage[v1[0]][v1[1]]).norm()) {
+            System.out.println("H länger V");
+            posTop = storage[v1[0] + (v3[0]-v1[0])/2][v1[1] + (v3[1]-v1[1])/2]; // Links Mitte
+            posBottom = storage[v2[0] + (v4[0]-v2[0])/2][v2[1] + (v4[1]-v2[1])/2]; // Rechts Mitte
+        } else {
+            System.out.println("V länger H");
+            posTop = storage[v1[0] + (v2[0]-v1[0])/2][v1[1] + (v2[1]-v1[1])/2]; // Oben Mitte
+            posBottom = storage[v3[0] + (v4[0]-v3[0])/2][v3[1] + (v4[1]-v3[1])/2]; // Unten Mitte
+        }
 
         svg.startPath();
-        svg.moveTo(posTop);
-        svg.lineTo(posBottom);
+        svg.moveTo(startPoint);
+        svg.lineTo(endPoint);
         circles.add(svg.getPathAndClear());
-
         writeSVG(circles, "stg_03", width, height);
-
-        int piecesY_ = 1;
-
-        Vector posTemp, posMiddle = posTemp = middleRnd(posTop, posBottom, randomizeBy, Integer.valueOf(Math.floorDiv(piecesY, 2)).doubleValue()/Integer.valueOf(piecesY).doubleValue());
-        circles.add("<circle cx=\"" + posMiddle.get(0) + "\" cy=\"" + posMiddle.get(1) + "\" r=\"" + (((width/piecesX + height/piecesY)/2)/10) + "\" class=\"b\"/>\n");
-        piecesY_++;
 
 
 /*
@@ -149,19 +207,48 @@ public class Main {
 
         writeSVG(circles, "stg_04", width, height);
 
-        ArrayList<Vector> test = middleCntd(posTop, posBottom, randomizeBy, piecesY-1);
+        ArrayList<Vector> test = middleCntd(posTop, posBottom, randomizeBy, piecesY, piecesY, 1);
+        circlesV.addAll(test);
+
+        for(int i = 0; i < test.size(); i++) {
+            storage[piecesX/2][i+1] = test.get(i);
+        }
+
         System.out.println("What the heck: " + Arrays.toString(test.toArray()));
-        for(Vector v : test) {
+
+
+        /*
+                v1 = startPoint;
+                v2 = SparseVector.fromArray(new double[] {width, 0});
+                v3 = SparseVector.fromArray(new double[] {0, height});
+                v4 = endPoint;
+
+        if(v2.subtract(v1).norm() > v3.subtract(v1).norm()) {
+            posTop = circlesV.get(piecesX/2-1);
+            posBottom = circlesV.get(piecesX + piecesX/2-2);
+        } else {
+            posTop = v1.add(v3.subtract(v1).divide(2D));
+            posBottom = v2.add(v4.subtract(v2).divide(2D));
+        }
+        */
+        svg.startPath();
+        svg.moveTo(startPoint);
+        svg.lineTo(endPoint);
+        circles.add(svg.getPathAndClear());
+
+
+
+        for(Vector v : circlesV) {
             circles.add("<circle cx=\"" + v.get(0) + "\" cy=\"" + v.get(1) + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/12) + "\" class=\"c\"/>\n");
         }
 
         writeSVG(circles, "stg_05", width, height);
 
 
-        Vector middle = middleRnd(startPoint, endPoint, randomizeBy);
-        System.out.println(middle.mkString(NumberFormat.getNumberInstance(), ","));
+        //Vector middle = middleRnd(startPoint, endPoint, randomizeBy, 0);
+        //System.out.println(middle.mkString(NumberFormat.getNumberInstance(), ","));
 
-        middleEdgeRnd(startPoint, Vector.fromArray(new double[]{width, 0}), Vector.fromArray(new double[]{0, height}), endPoint, middle, randomizeBy);
+        //middleEdgeRnd(startPoint, Vector.fromArray(new double[]{width, 0}), Vector.fromArray(new double[]{0, height}), endPoint, middle, randomizeBy);
 
 /*
         SparseVector startPoint = SparseVector.fromArray(new double[]{0,100});
@@ -208,64 +295,75 @@ public class Main {
                 "</svg>\n";
         try{
             System.out.println("Writing file");
-            Files.write(Paths.get("G:\\Matura\\output-" + releaseName + ".svg"), svgData.getBytes());
+            Files.write(Paths.get("C:\\Users\\Wombosvideo\\Documents\\output\\output-" + releaseName + ".svg"), svgData.getBytes());
         } catch(IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private static ArrayList<Vector> middleCntd(Vector p1, Vector p2, double randomizeBy, int frac) {
-        return middleCntd(p1, p2, randomizeBy, frac, "c");
+    private static ArrayList<Vector> middleCntd(Vector p1, Vector p2, double randomizeBy, int frac, int max, int additional) {
+        return middleCntd(p1, p2, randomizeBy, frac, max, additional, "c");
     }
 
-    private static ArrayList<Vector> middleCntd(Vector p1, Vector p2, double randomizeBy, int frac, String klass) {
+    private static ArrayList<Vector> middleCntd(Vector p1, Vector p2, double randomizeBy, int frac, int max, int additional, String klass) {
+        Vector m;
+        if(frac % 2 == 0) {
+            // Middle exists
+            // FIXME: 0.5D scheint falsch
+            m = middleRnd(p1, p2, randomizeBy, 0.5D, additional);
+        } else {
+            // Middle doesn't exist, use (frac/2)/max
+            m = middleRnd(p1, p2, randomizeBy, (Integer.valueOf(frac).doubleValue()/2D)/Integer.valueOf(max).doubleValue(), additional);
+
+        }
+
         int fracLow = Math.floorDiv(frac, 2);
         int fracHigh = frac-fracLow;
         ArrayList<Vector> vectors = new ArrayList<>();
 
-        Vector m = middleRnd(p1, p2, randomizeBy, Integer.valueOf(fracLow).doubleValue()/Integer.valueOf(frac).doubleValue());
 
-        if(fracLow == 1) {
-            // Don't know what to do
-            System.out.println("Don't know what to do: " + fracLow + "/" + frac + " or " + fracHigh + "/" + frac);
-            vectors.add(middleRnd(p1, m, randomizeBy, Integer.valueOf(fracLow).doubleValue()/Integer.valueOf(frac).doubleValue()));
-        }
-        if(fracHigh == 1) {
-            // Don't know what to do
-            System.out.println("Don't know what to do: " + fracLow + "/" + frac + " or " + fracHigh + "/" + frac);
-            vectors.add(middleRnd(m, p2, randomizeBy, Integer.valueOf(fracLow).doubleValue()/Integer.valueOf(frac).doubleValue()));
-        }
-        if(fracHigh == 1 || fracLow == 1)
+        vectors.add(m);
+
+        /*
+        if(fracHigh == 1 && fracLow == 1) {
+            vectors.add(m);
             return vectors;
-
+        }
+        */
+        if(fracLow > 1)
+            vectors.addAll(middleCntd(p1, m, randomizeBy, fracLow, max, additional));
+/*
         if(fracLow%2==0) {
-            System.out.println("This is low funny: " + fracLow);
-            vectors.addAll(middleCntd(p1, m, randomizeBy, fracLow));
+            vectors.addAll(middleCntd(p1, m, randomizeBy, fracLow, max));
         } else {
             for(int i = 1; i < fracLow; i++){
                 Vector mdl = middleRnd(p1, m, randomizeBy, Integer.valueOf(i).doubleValue()/Integer.valueOf(fracLow).doubleValue());
                 vectors.add(mdl);
             }
         }
-
+*/
+        if(fracHigh > 1)
+            vectors.addAll(middleCntd(m, p2, randomizeBy, fracHigh, max, additional));
+/*
         if(fracHigh%2==0) {
             System.out.println("This is high funny: " + fracHigh);
-            vectors.addAll(middleCntd(m, p2, randomizeBy, fracHigh));
+            vectors.addAll(middleCntd(m, p2, randomizeBy, fracHigh, max));
         } else {
             for(int i = 1; i < fracHigh; i++){
                 Vector mdl = middleRnd(m, p2, randomizeBy, Integer.valueOf(i).doubleValue()/Integer.valueOf(fracHigh).doubleValue());
                 vectors.add(mdl);
             }
         }
+*/
         return vectors;
     }
 
-    private static Vector middleRnd(Vector p1, Vector p2, double randomizeBy) {
-        return middleRnd(p1, p2, randomizeBy, 0.5D);
+    private static Vector middleRnd(Vector p1, Vector p2, double randomizeBy, int additional) {
+        return middleRnd(p1, p2, randomizeBy, 0.5D, additional);
     }
 
-    private static Vector middleRnd(Vector p1, Vector p2, double randomizeBy, double frac) {
+    private static Vector middleRnd(Vector p1, Vector p2, double randomizeBy, double frac, int additional) {
         Vector r1 = p2.subtract(p1);
         Vector tst1 = r1.multiply(frac);
         Vector tst2 = tst1.add(p1);
@@ -274,9 +372,10 @@ public class Main {
         System.out.println("DEBUG: x" + (random.nextBoolean() ? 0.5 : -0.5)*randomizeBy*random.nextDouble()*r1.get(0));
         System.out.println("DEBUG: y" + (random.nextBoolean() ? 0.5 : -0.5)*randomizeBy*random.nextDouble()*r1.get(1));
         System.out.println(tst2.mkString(NumberFormat.getNumberInstance(), ","));
-        Vector mod = Vector.fromArray(new double[] {tst2.get(0) + (random.nextBoolean() ? 0.5 : -0.5)*randomizeBy*random.nextDouble()*r1.get(0), tst2.get(1) + (random.nextBoolean() ? 0.5 : -0.5)*randomizeBy*random.nextDouble()*r1.get(1) });
-
-        Vector out = tst2.add(mod);
+        Vector mod = Vector.fromArray(new double[] {
+                tst2.get(0) + (random.nextBoolean() ? 0.5 : -0.5)*randomizeBy*random.nextDouble()*r1.get(0) + (additional > 0 ? random.nextDouble()*(randomizeBy/10D)*r1.norm() : 0),
+                tst2.get(1) + (random.nextBoolean() ? 0.5 : -0.5)*randomizeBy*random.nextDouble()*r1.get(1) + (additional < 0 ? random.nextDouble()*(randomizeBy/10D)*r1.norm() : 0)
+        });
         return mod;
     }
 
