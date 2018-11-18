@@ -32,13 +32,13 @@ public class IndexBased {
         this.vec[piecesX][piecesY] = Vector.fromArray(new double[] {this.width, this.height});
 
         // Top row
-        this.midPoints(0, 0, this.piecesX, 0, randomize, 0D);
+        this.midPoints(0, 0, this.piecesX, 0, -1, -1, -1, -1, randomize, 0D);
         // Bottom row
-        this.midPoints(0, this.piecesY, this.piecesX, this.piecesY, randomize, 0D);
+        this.midPoints(0, this.piecesY, this.piecesX, this.piecesY, -1, -1, -1, -1, randomize, 0D);
         // Left row
-        this.midPoints(0, 0, 0, this.piecesY, 0D, randomize);
+        this.midPoints(0, 0, 0, this.piecesY, -1, -1, -1, -1, 0D, randomize);
         // Right row
-        this.midPoints(this.piecesX, 0, this.piecesX, this.piecesY, 0D, randomize);
+        this.midPoints(this.piecesX, 0, this.piecesX, this.piecesY, -1, -1, -1, -1, 0D, randomize);
 
         System.out.println("Outer grid completed!");
     }
@@ -65,12 +65,12 @@ public class IndexBased {
             ym2 = y1 + (y2 - y1) / 2;
         }
 
-        this.midPoints(xm1, ym1, xm2, ym2, randomizeX, randomizeY);
+        this.midPoints(xm1, ym1, xm2, ym2, x1, y1, x2, y2, randomizeX, randomizeY);
     }
 
-    public void midPoints(int x1, int y1, int x2, int y2, double randomizeX, double randomizeY) {
+    public void midPoints(int x1, int y1, int x2, int y2, int ox1, int oy1, int ox2, int oy2, double randomizeX, double randomizeY) {
         // Right next to each other or same point
-        if(x2 - x1 <= 1 && y2 - y1 <= 1)
+        if((x2 - x1) <= 1 && (y2 - y1) <= 1)
             return;
 
         System.out.println("Generating midPoints between (" + x1 + "|" + y1 + ") and (" + x2 + "|" + y2 + ")");
@@ -111,11 +111,14 @@ public class IndexBased {
 
         System.out.println("Generated new midPoint at (" + xm + "|" + ym + ")");
 
-        this.midPoints(x1, y1, xm, ym, randomizeX, randomizeY);
-        this.midPoints(xm, ym, x2, y2, randomizeX, randomizeY);
+        this.midPoints(x1, y1, xm, ym, ox1, oy1, oy2, oy2, randomizeX, randomizeY);
+        this.midPoints(xm, ym, x2, y2, ox1, oy1, oy2, oy2, randomizeX, randomizeY);
 
-        this.midLine(x1, y1, xm, ym, randomizeX, randomizeY);
-        this.midLine(xm, ym, y2, y2, randomizeX, randomizeY);
+        if(ox1 != -1 && oy1 != -1 && ox2 != -1 && oy2 != -1) {
+            this.midLine(x1, y1, ox2, oy2, randomizeX, randomizeY);
+            this.midLine(ox1, oy1, y2, y2, randomizeX, randomizeY);
+        }
+
     }
 
     public void setup(double randomize) {
