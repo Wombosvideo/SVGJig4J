@@ -83,6 +83,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+
         int width = 1000;
         int height = 600;
 
@@ -90,6 +91,34 @@ public class Main {
         int piecesY = 8; // aka. columns
 
         double randomizeBy = 0.1;
+
+        IndexBased ib = new IndexBased(width, height, piecesX, piecesY);
+        try {
+            ib.setup(randomizeBy);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            ib.printNonNull();
+        }
+
+        ArrayList<String> output = new ArrayList<>();
+
+        for(int x = 0; x <= piecesX; x++) {
+            for(int y = 0; y <= piecesY; y++) {
+                Vector v = ib.vec[x][y];
+                if(v != null)
+                output.add("<circle cx=\"" + v.get(0) + "\" cy=\"" + v.get(1) + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/12) + "\" class=\"c\"/>\n");
+            }
+        }
+
+        writeSVG(output, "test", width, height);
+
+        //----------------------------------------------------------------------
+
+        int a = 1;
+        a++;
+        if(a < 100)
+            return;
+
 
         SparseVector startPoint = SparseVector.fromArray(new double[] {0, 0});
         SparseVector endPoint = SparseVector.fromArray(new double[] {width, height});
@@ -295,7 +324,8 @@ public class Main {
                 "</svg>\n";
         try{
             System.out.println("Writing file");
-            Files.write(Paths.get("C:\\Users\\Wombosvideo\\Documents\\output\\output-" + releaseName + ".svg"), svgData.getBytes());
+            //Files.write(Paths.get("C:\\Users\\Wombosvideo\\Documents\\output\\output-" + releaseName + ".svg"), svgData.getBytes());
+            Files.write(Paths.get("G:\\Matura\\output-" + releaseName + ".svg"), svgData.getBytes());
         } catch(IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
