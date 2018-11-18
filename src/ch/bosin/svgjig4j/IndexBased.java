@@ -57,14 +57,12 @@ public class IndexBased {
 
             xm2 = x1 + (x2 - x1) / 2;
             ym2 = y2;
-            System.out.println("Generating y-midLine between (" + x1 + "|" + y1 + ") and (" + x2 + "|" + y2 + ")");
         } else {
             xm1 = x1;
             ym1 = y1 + (y2 - y1) / 2;
 
             xm2 = x2;
             ym2 = y1 + (y2 - y1) / 2;
-            System.out.println("Generating x-midLine between (" + x1 + "|" + y1 + ") and (" + x2 + "|" + y2 + ")");
         }
 
         this.midPoints(xm1, ym1, xm2, ym2, randomizeX, randomizeY);
@@ -83,11 +81,18 @@ public class IndexBased {
         int xm = x1 + (x2 - x1) / 2;
         int ym = y1 + (y2 - y1) / 2;
 
-        int factor =
-                ((x2 - x1) / 2) / Math.max(1, x2 - x1) +
-                ((y2 - y1) / 2) / Math.max(1, y2 - y1);
+        double factor =
+                Integer.valueOf((x2 - x1) / 2).doubleValue() / Math.max(1D, Integer.valueOf(x2 - x1).doubleValue()) +
+                Integer.valueOf((y2 - y1) / 2).doubleValue() / Math.max(1D, Integer.valueOf(y2 - y1).doubleValue());
 
-        Vector vm = v1.add(v2.subtract(v1).multiply(Integer.valueOf(factor).doubleValue()));
+
+        if(v1 == null || v2 == null) {
+            System.err.println("Grid error occured! There is no Vector at (" + (v1 == null ? x1 + "|" + y1 : x2 + "|" + y2) + ")" + (v1 == null && v2 == null ? " and (" + x2 + "|" + y2 + ")." : "."));
+            return;
+        }
+
+
+        Vector vm = v1.add(v2.subtract(v1).multiply(factor));
 
         // BEGIN: Randomization
         Random random = new Random();

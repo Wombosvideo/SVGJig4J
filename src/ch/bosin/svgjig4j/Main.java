@@ -87,10 +87,10 @@ public class Main {
         int width = 1000;
         int height = 600;
 
-        int piecesX = 11; // aka. rows
+        int piecesX = 10; // aka. rows
         int piecesY = 8; // aka. columns
 
-        double randomizeBy = 0.1;
+        double randomizeBy = 0;
 
         IndexBased ib = new IndexBased(width, height, piecesX, piecesY);
         try {
@@ -324,8 +324,8 @@ public class Main {
                 "</svg>\n";
         try{
             System.out.println("Writing file");
-            //Files.write(Paths.get("C:\\Users\\Wombosvideo\\Documents\\output\\output-" + releaseName + ".svg"), svgData.getBytes());
-            Files.write(Paths.get("G:\\Matura\\output-" + releaseName + ".svg"), svgData.getBytes());
+            Files.write(Paths.get("C:\\Users\\Wombosvideo\\Documents\\output\\output-" + releaseName + ".svg"), svgData.getBytes());
+            //Files.write(Paths.get("G:\\Matura\\output-" + releaseName + ".svg"), svgData.getBytes());
         } catch(IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
