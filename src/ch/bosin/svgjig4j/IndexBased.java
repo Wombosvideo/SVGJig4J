@@ -2,9 +2,9 @@ package ch.bosin.svgjig4j;
 
 import org.la4j.Vector;
 
+import java.lang.reflect.Array;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 public class IndexBased {
@@ -24,8 +24,6 @@ public class IndexBased {
     }
 
     public void outerGrid(double randomize) {
-        System.out.println("Drawing outer grid...");
-
         this.vec[0][0] = Vector.fromArray(new double[] {0D, 0D});
         this.vec[piecesX][0] = Vector.fromArray(new double[] {this.width, 0D});
         this.vec[0][piecesY] = Vector.fromArray(new double[] {0D, this.height});
@@ -39,13 +37,11 @@ public class IndexBased {
         this.midPoints(0, 0, 0, this.piecesY, 0D, randomize);
         // Right row
         this.midPoints(this.piecesX, 0, this.piecesX, this.piecesY, 0D, randomize);
-
-        System.out.println("Outer grid completed!");
     }
 
     public void midLine(int x1, int y1, int x2, int y2, double randomizeX, double randomizeY) {
         // Right next to each other or same point
-        if(x2 - x1 <= 2 && y2 - y1 <= 2)
+        if(x2 - x1 <= 1 && y2 - y1 <= 1)
             return;
 
         int xm1, ym1;
@@ -66,14 +62,14 @@ public class IndexBased {
         }
 
         this.midPoints(xm1, ym1, xm2, ym2, randomizeX, randomizeY);
+        this.midLine(x1, y1, xm2, ym2, randomizeX, randomizeY);
+        this.midLine(xm1, ym1, x2, y2, randomizeX, randomizeY);
     }
 
     public void midPoints(int x1, int y1, int x2, int y2, double randomizeX, double randomizeY) {
         // Right next to each other or same point
         if(x2 - x1 <= 1 && y2 - y1 <= 1)
             return;
-
-        System.out.println("Generating midPoints between (" + x1 + "|" + y1 + ") and (" + x2 + "|" + y2 + ")");
 
         Vector v1 = this.vec[x1][y1];
         Vector v2 = this.vec[x2][y2];
@@ -109,19 +105,12 @@ public class IndexBased {
 
         this.vec[xm][ym] = vm.add(vRandom);
 
-        System.out.println("Generated new midPoint at (" + xm + "|" + ym + ")");
-
         this.midPoints(x1, y1, xm, ym, randomizeX, randomizeY);
         this.midPoints(xm, ym, x2, y2, randomizeX, randomizeY);
-
-        this.midLine(x1, y1, xm, ym, randomizeX, randomizeY);
-        this.midLine(xm, ym, y2, y2, randomizeX, randomizeY);
     }
 
     public void setup(double randomize) {
-        System.out.println("Setting up...");
         this.outerGrid(randomize);
-        System.out.println("Drawing first line...");
         this.midLine(0, 0, piecesX, piecesY, randomize, randomize);
     }
 
@@ -133,6 +122,83 @@ public class IndexBased {
                     nonNull.add(Vector.fromArray(new double[] {x, y}));
         for(Vector idx : nonNull)
             System.out.println(idx.mkString(NumberFormat.getNumberInstance(), ","));
+    }
+
+    public String connect(int x1, int y1, int x2, int y2) {
+        SVGHelper svg;
+
+        // BEGIN: Randomization
+        Random random = new Random();
+        boolean rndB = random.nextBoolean();
+        if(rndB)
+            svg = new SVGHelper(this.vec[x1][y1], this.vec[x2][y2]);
+        else
+            svg = new SVGHelper(this.vec[x2][y2], this.vec[x1][y1]);
+        // END: Randomization
+
+        // Creates a new path
+        svg.startPath();
+
+        // Moves cursor to given start point (0|0)
+        svg.moveTo(0.00, 0.00);
+        // Draws a line to (0.3|0)
+        svg.lineTo(0.40, 0.00);
+
+        // Draws a curve to (0.23|0.2)
+        svg.curveTo(
+                0.475, 0.00,
+                0.39, 0.05,
+                0.365, 0.10
+        );
+        // Draws a curve to (0.33|0.4)
+        svg.curveTo(
+                0.345, 0.14,
+                0.375, 0.18,
+                0.415, 0.20
+        );
+        // Draws a curve to (0.67|0.4)
+        svg.curveTo(
+                0.465, 0.225,
+                0.535, 0.225,
+                0.585, 0.20
+        );
+        // Draws a curve to (0.77|0.2)
+        svg.curveTo(
+                0.625, 0.18,
+                0.655, 0.14,
+                0.635, 0.10
+        );
+        // Draws a curve to (0.7|0)
+        svg.curveTo(
+                0.61, 0.05,
+                0.525, 0.00,
+                0.60, 0.00
+        );
+
+        // Draws a line to given end point (1|0)
+        svg.lineTo(svg.getEndPoint());
+
+        return svg.getPathAndClear();
+    }
+
+    public ArrayList<String> makeConnections() {
+        ArrayList<String> connections = new ArrayList<>();
+        for(int x = 1; x < piecesX; x++) {
+            for(int y = 1; y <= piecesY; y++) {
+                if(y != piecesY)
+                    connections.add(this.connect(x - 1, y, x, y));
+                if(x != piecesX)
+                    connections.add(this.connect(x, y - 1, x, y));
+            }
+        }
+        for(int y = 1; y < piecesY; y++) {
+            connections.add(this.connect(piecesX - 1, y, piecesX, y));
+        }
+        return connections;
+    }
+
+    public String outerLines() {
+        return "<rect width=\"" + width + "\" height=\"" + height + "\" class=\"a\" />";
     }
 
 }

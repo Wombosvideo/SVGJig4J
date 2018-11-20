@@ -5,12 +5,10 @@ import org.la4j.Vector;
 import org.la4j.vector.SparseVector;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Main {
 
@@ -87,10 +85,10 @@ public class Main {
         int width = 1000;
         int height = 600;
 
-        int piecesX = 10; // aka. rows
-        int piecesY = 8; // aka. columns
+        int piecesX = 8; // aka. rows
+        int piecesY = 6; // aka. columns
 
-        double randomizeBy = 0;
+        double randomizeBy = 0.1D;
 
         IndexBased ib = new IndexBased(width, height, piecesX, piecesY);
         try {
@@ -101,16 +99,21 @@ public class Main {
         }
 
         ArrayList<String> output = new ArrayList<>();
-
+        /*
         for(int x = 0; x <= piecesX; x++) {
             for(int y = 0; y <= piecesY; y++) {
                 Vector v = ib.vec[x][y];
                 if(v != null)
                 output.add("<circle cx=\"" + v.get(0) + "\" cy=\"" + v.get(1) + "\" r=\"" + (((width/(piecesX-1) + height/(piecesY-1))/2)/12) + "\" class=\"c\"/>\n");
             }
-        }
+        }*/
+
+        output.addAll(ib.makeConnections());
+        output.add(ib.outerLines());
 
         writeSVG(output, "test", width, height);
+
+        //writeSVG(ib.makeConnections(), "test", width, height);
 
         //----------------------------------------------------------------------
 
