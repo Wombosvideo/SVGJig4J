@@ -327,8 +327,8 @@ public class Main {
                 "</svg>\n";
         try{
             System.out.println("Writing file");
-            Files.write(Paths.get("C:\\Users\\Wombosvideo\\Documents\\output\\output-" + releaseName + ".svg"), svgData.getBytes());
-            //Files.write(Paths.get("G:\\Matura\\output-" + releaseName + ".svg"), svgData.getBytes());
+            //Files.write(Paths.get("C:\\Users\\Wombosvideo\\Documents\\output\\output-" + releaseName + ".svg"), svgData.getBytes());
+            Files.write(Paths.get("G:\\Matura\\output-" + releaseName + ".svg"), svgData.getBytes());
         } catch(IOException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
