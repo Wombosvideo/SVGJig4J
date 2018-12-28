@@ -42,7 +42,7 @@ public class SVGHelper {
      * @return a String with all coordinates delimited by a ","
      */
     public String vecToString(final Vector vector){
-        return vector.mkString(NumberFormat.getNumberInstance(), ",");
+        return vector.mkString(NumberFormat.getNumberInstance(), ",").replaceAll("’", "");
     }
 
     /**
@@ -68,13 +68,19 @@ public class SVGHelper {
         return "C" + String.join(" ", Arrays.stream(curvePoints).map(this::vecToString).collect(Collectors.toList()));
     }
 
+    public String cubicCurveTo(final Vector controlPoint, final Vector endPoint) {
+        if(this.path != null)
+            path.append("Q" + vecToString(controlPoint) + "," + vecToString(endPoint));
+        return "Q" + vecToString(controlPoint) + "," + vecToString(endPoint);
+    }
+
     /**
      * Converts an absolute coordinate vector to an svg move to command
      * @param endPoint an absolute coordinate Vector of the cursor point
      * @return a String in the format "Mx,y"
      */
     public String moveTo(final Vector endPoint) {
-        if(this.path != null)
+        if (this.path != null)
             path.append(this.endPointHelper(endPoint, "M"));
         return this.endPointHelper(endPoint, "M");
     }

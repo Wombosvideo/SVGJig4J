@@ -132,26 +132,73 @@ public class IndexBased {
             System.out.println(idx.mkString(NumberFormat.getNumberInstance(), ","));
     }
 
-    public String connect(int x1, int y1, int x2, int y2) {
+    public String connect(int x1, int y1, int x2, int y2, int x3, int y3) {
         SVGHelper svg;
+        Vector from, to, connect = null;
+        boolean hasStart = x1 == 0 || y1 == 0;
+        boolean hasConnection = x3 <= piecesX && y3 <= piecesY;
 
         // BEGIN: Randomization
         Random random = new Random();
         boolean rndB = random.nextBoolean();
-        if(rndB)
-            svg = new SVGHelper(this.vec[x1][y1], this.vec[x2][y2]);
-        else
-            svg = new SVGHelper(this.vec[x2][y2], this.vec[x1][y1]);
+        if(rndB) {
+            from = this.vec[x1][y1];
+            to = this.vec[x2][y2];
+        } else {
+            from = this.vec[x2][y2];
+            to = this.vec[x1][y1];
+        }
+        if(hasConnection)
+            connect = this.vec[x3][y3];
+        svg = new SVGHelper(from, to);
         // END: Randomization
+
+
+        System.out.println(
+                "rndB: " + Boolean.toString(rndB) + " " +
+                "hasStart: " + Boolean.toString(hasStart) + " " +
+                "hasConnection: " + Boolean.toString(hasConnection) + " " +
+                "from: " + svg.vecToString(from) + " " +
+                "to: " + svg.vecToString(to));
+
 
         // Creates a new path
         svg.startPath();
 
-        // Moves cursor to given start point (0|0)
-        svg.moveTo(0.00, 0.00);
-        // Draws a line to (0.3|0)
-        svg.lineTo(0.40, 0.00);
+        if(rndB) {
+            if(hasStart) {
+                svg.moveTo(vec[x1][y1]);
+            } else {
+                svg.moveTo(vec[x1][y1].add(vec[x2][y2].subtract(vec[x1][y1]).multiply(0.40)));
+            }
+        } else {
+            if(hasConnection) {
+                svg.moveTo(vec[x2][y2].add(vec[x3][y3].subtract(vec[x2][y2]).multiply(0.40)));
+                svg.cubicCurveTo(vec[x2][y2], vec[x2][y2].add(vec[x2][y2].subtract(vec[x1][y1]).multiply(0.40)));
+            } else {
+                svg.moveTo(vec[x2][y2]);
+            }
+        }
 
+        /*
+        if(!rndB && hasConnection) {
+            // Moves cursor to connector point
+            svg.moveTo(connect);
+            // Cubic cruve to start point
+            svg.cubicCurveTo(svg.curvePoint(0.00, 0.00), svg.curvePoint(0.40, 0.00));
+        } else {
+            if(!hasStart) {
+                // Moves cursor to given start point (0|0)
+                svg.moveTo(0.40, 0.00);
+            } else {
+                // Moves cursor to given start point (0|0)
+                svg.moveTo(0.00, 0.00);
+                // Draws a line to (0.3|0)
+                svg.lineTo(0.40, 0.00);
+            }
+
+        }
+        */
         // Draws a curve to (0.23|0.2)
         svg.curveTo(
                 0.475, 0.00,
@@ -183,8 +230,29 @@ public class IndexBased {
                 0.60, 0.00
         );
 
-        // Draws a line to given end point (1|0)
-        svg.lineTo(svg.getEndPoint());
+        if(rndB) {
+            if(hasConnection) {
+                svg.cubicCurveTo(vec[x2][y2], vec[x2][y2].add(vec[x3][y3].subtract(vec[x2][y2]).multiply(0.40)));
+            } else {
+                svg.lineTo(vec[x2][y2]);
+            }
+        } else {
+            if(hasStart) {
+                svg.lineTo(vec[x1][y1]);
+            }
+        }
+
+        /*
+        if(rndB && hasConnection) {
+            // Cubic curve to connector point
+            svg.cubicCurveTo(svg.curvePoint(1.00, 0.00), to.add(connect.subtract(to).multiply(0.40)));
+        } else {
+            if(!hasStart) {
+                // Draws a line to given end point (1|0)
+                svg.lineTo(svg.getEndPoint());
+            }
+        }
+        */
 
         return svg.getPathAndClear();
     }
@@ -194,16 +262,11 @@ public class IndexBased {
         for(int x = 1; x <= piecesX; x++) {
             for(int y = 1; y <= piecesY; y++) {
                 if(y != piecesY)
-                    connections.add(this.connect(x - 1, y, x, y));
+                    connections.add(this.connect(x - 1, y, x, y, x + 1, y));
                 if(x != piecesX)
-                    connections.add(this.connect(x, y - 1, x, y));
+                    connections.add(this.connect(x, y - 1, x, y, x, y + 1));
             }
         }
-        /*
-        for(int y = 1; y < piecesY; y++) {
-            connections.add(this.connect(piecesX - 1, y, piecesX, y));
-        }
-        */
         return connections;
     }
 
