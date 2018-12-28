@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class IndexBased {
 
@@ -13,6 +14,13 @@ public class IndexBased {
     public int width, height;
     public int piecesX, piecesY;
 
+    /**
+     *
+     * @param width
+     * @param height
+     * @param piecesX
+     * @param piecesY
+     */
     public IndexBased(int width, int height, int piecesX, int piecesY) {
         this.vec = new Vector[piecesX + 1][piecesY + 1];
 
@@ -183,7 +191,7 @@ public class IndexBased {
 
     public ArrayList<String> makeConnections() {
         ArrayList<String> connections = new ArrayList<>();
-        for(int x = 1; x < piecesX; x++) {
+        for(int x = 1; x <= piecesX; x++) {
             for(int y = 1; y <= piecesY; y++) {
                 if(y != piecesY)
                     connections.add(this.connect(x - 1, y, x, y));
@@ -191,9 +199,11 @@ public class IndexBased {
                     connections.add(this.connect(x, y - 1, x, y));
             }
         }
+        /*
         for(int y = 1; y < piecesY; y++) {
             connections.add(this.connect(piecesX - 1, y, piecesX, y));
         }
+        */
         return connections;
     }
 
