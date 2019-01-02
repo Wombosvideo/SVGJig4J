@@ -3,6 +3,7 @@ package ch.bosin.svgjig4j;
 import org.la4j.Matrix;
 import org.la4j.Vector;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -10,8 +11,10 @@ import java.util.stream.Collectors;
 public class SVGHelper {
 
     private final Vector startPoint, endPoint, unitVectorX, unitVectorY;
+    private String id;
     private StringBuilder path;
     public final int width, height;
+    private static final NumberFormat NUMFORM = new DecimalFormat("#.###");
 
     public SVGHelper(final Vector startPoint, final Vector endPoint) {
         this.startPoint = startPoint;
@@ -42,7 +45,7 @@ public class SVGHelper {
      * @return a String with all coordinates delimited by a ","
      */
     public String vecToString(final Vector vector){
-        return vector.mkString(NumberFormat.getNumberInstance(), ",").replaceAll("’", "");
+        return vector.mkString(NUMFORM, ",").replaceAll("’", "");
     }
 
     /**
@@ -135,7 +138,7 @@ public class SVGHelper {
     }
 
     public String getPath() {
-        return "<path class=\"a\" d=\"" + this.path.toString() + "\"/>\n";
+        return "<path " + (this.id != null && this.id != "" ? "id=\"" + this.id + "\" " : "") + "class=\"a\" d=\"" + this.path.toString() + "\"/>\n";
     }
 
     public String getPathAndClear() {
@@ -159,5 +162,13 @@ public class SVGHelper {
 
     public Vector getUnitVectorY() {
         return unitVectorY;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

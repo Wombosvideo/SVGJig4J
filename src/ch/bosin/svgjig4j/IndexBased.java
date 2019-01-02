@@ -165,6 +165,7 @@ public class IndexBased {
         // Creates a new path
         svg.startPath();
 
+        /*
         if(rndB) {
             if(hasStart) {
                 svg.moveTo(vec[x1][y1]);
@@ -179,26 +180,15 @@ public class IndexBased {
                 svg.moveTo(vec[x2][y2]);
             }
         }
-
-        /*
-        if(!rndB && hasConnection) {
-            // Moves cursor to connector point
-            svg.moveTo(connect);
-            // Cubic cruve to start point
-            svg.cubicCurveTo(svg.curvePoint(0.00, 0.00), svg.curvePoint(0.40, 0.00));
-        } else {
-            if(!hasStart) {
-                // Moves cursor to given start point (0|0)
-                svg.moveTo(0.40, 0.00);
-            } else {
-                // Moves cursor to given start point (0|0)
-                svg.moveTo(0.00, 0.00);
-                // Draws a line to (0.3|0)
-                svg.lineTo(0.40, 0.00);
-            }
-
-        }
         */
+
+        if((rndB && (x1 == 0 || y1 == 0)) || (!rndB && (x2 == piecesX || y2 == piecesY))) {
+            svg.moveTo(0, 0);
+            svg.lineTo(0.4, 0);
+        } else {
+            svg.moveTo(0.4, 0);
+        }
+
         // Draws a curve to (0.23|0.2)
         svg.curveTo(
                 0.475, 0.00,
@@ -230,6 +220,12 @@ public class IndexBased {
                 0.60, 0.00
         );
 
+        if((!rndB && (x1 == 0 || y1 == 0)) || (rndB && (x2 == piecesX || y2 == piecesY))) {
+            svg.lineTo(1, 0);
+        }
+
+
+        /*
         if(rndB) {
             if(hasConnection) {
                 svg.cubicCurveTo(vec[x2][y2], vec[x2][y2].add(vec[x3][y3].subtract(vec[x2][y2]).multiply(0.40)));
@@ -241,20 +237,25 @@ public class IndexBased {
                 svg.lineTo(vec[x1][y1]);
             }
         }
-
-        /*
-        if(rndB && hasConnection) {
-            // Cubic curve to connector point
-            svg.cubicCurveTo(svg.curvePoint(1.00, 0.00), to.add(connect.subtract(to).multiply(0.40)));
-        } else {
-            if(!hasStart) {
-                // Draws a line to given end point (1|0)
-                svg.lineTo(svg.getEndPoint());
-            }
-        }
         */
 
-        return svg.getPathAndClear();
+        svg.setId(Integer.toString(x1) + "|" + Integer.toString(y1) + " - " + Integer.toString(x2) + "|" + Integer.toString(y2));
+
+        String curvePath = svg.getPathAndClear();
+
+        if(x2 > 0 && x2 < piecesX && y2 > 0 && y2 < piecesY) {
+
+            svg = new SVGHelper(Vector.fromArray(new double[] {0, 0}), Vector.fromArray(new double[] {0, 0}));
+            svg.startPath();
+            svg.moveTo(vec[x1][y1].add(vec[x2][y2].subtract(vec[x1][y1]).multiply(0.6)));
+            svg.cubicCurveTo(vec[x2][y2], vec[x2][y2].add(vec[x3][y3].subtract(vec[x2][y2]).multiply(0.4)));
+            curvePath += svg.getPathAndClear();
+
+        }
+
+
+        //return svg.getPathAndClear();
+        return curvePath;
     }
 
     public ArrayList<String> makeConnections() {
