@@ -16,17 +16,36 @@ public class SVGHelper {
     public final int width, height;
     private static final NumberFormat NUMFORM = new DecimalFormat("#.###");
 
+    /**
+     * Constructs an SVG helper class without support for relative coordinates
+     */
+    public SVGHelper() {
+        this(Vector.fromArray(new double[]{0,0}), Vector.fromArray(new double[]{0,0}));
+    }
+
+    /**
+     * Constructs an SVG helper class with support for relative coordinates
+     * @param startPoint start point for relative coordinates
+     * @param endPoint end point for relative coordinates
+     */
     public SVGHelper(final Vector startPoint, final Vector endPoint) {
         this.startPoint = startPoint;
         this.endPoint = endPoint;
+        // Unit vectors for relative coordinates
         this.unitVectorX = this.endPoint.subtract(startPoint);
         this.unitVectorY = this.unitVectorX.multiply(Matrix.from1DArray(2,2,new double[]{0,1,-1,0}));
+        // Width and height are calculated by horizontal and vertical distance between start and end point
         this.width = Double.valueOf(Math.ceil(this.endPoint.subtract(this.startPoint).get(0))).intValue();
         this.height = Double.valueOf(Math.ceil(this.endPoint.subtract(this.startPoint).get(1))).intValue();
     }
 
-    private String endPointHelper(final Vector endPoint, final String letter) {
-        return letter + this.vecToString(endPoint);
+    /**
+     * @param vector vector to be appended after letter
+     * @param letter letter to be prepended before vector
+     * @return letter and vector
+     */
+    private String endPointHelper(final Vector vector, final String letter) {
+        return letter + this.vecToString(vector);
     }
 
     /**
@@ -50,8 +69,8 @@ public class SVGHelper {
 
     /**
      * Converts relative curve coordinates into an absolute point
-     * @param x Relative coordinate in direct direction
-     * @param y Relative coordinate in perpendicular direction
+     * @param x relative coordinate in direct direction
+     * @param y relative coordinate in perpendicular direction
      * @return absolute point as a Vector
      */
     public Vector curvePoint(final double x, final double y) {
@@ -71,6 +90,12 @@ public class SVGHelper {
         return "C" + String.join(" ", Arrays.stream(curvePoints).map(this::vecToString).collect(Collectors.toList()));
     }
 
+    /**
+     * Creates a cubic svg curve to end point via control point
+     * @param controlPoint control point of cubic curve
+     * @param endPoint end point of cubic curve
+     * @return a String in the format "Qx1,y1 x,y"
+     */
     public String cubicCurveTo(final Vector controlPoint, final Vector endPoint) {
         if(this.path != null)
             path.append("Q" + vecToString(controlPoint) + "," + vecToString(endPoint));
@@ -100,12 +125,12 @@ public class SVGHelper {
 
     /**
      * Creates an svg curve using relative coordinates
-     * @param x1 Relative coordinates of control point of start point in direct direction
-     * @param y1 Relative coordinates of control point of start point in perpendicular direction
-     * @param x2 Relative coordinates of control point of end point in direct direction
-     * @param y2 Relative coordinates of control point of end point in perpendicular direction
-     * @param x Relative coordinates of end point in direct direction
-     * @param y Relative coordinates of end point in perpendicular direction
+     * @param x1 relative coordinates of control point of start point in direct direction
+     * @param y1 relative coordinates of control point of start point in perpendicular direction
+     * @param x2 relative coordinates of control point of end point in direct direction
+     * @param y2 relative coordinates of control point of end point in perpendicular direction
+     * @param x relative coordinates of end point in direct direction
+     * @param y relative coordinates of end point in perpendicular direction
      * @return a String in the format "Cx1,y1 x2,y2 x,y"
      */
     public String curveTo(final double x1, final double y1, final double x2, final double y2, final double x, final double y) {
@@ -125,22 +150,33 @@ public class SVGHelper {
 
     /**
      * Creates an svg line using relative coordinates
-     * @param x Relative coordinates of end point in direct direction
-     * @param y Relative coordinates of end point in perpendicular direction
+     * @param x relative coordinates of end point in direct direction
+     * @param y relative coordinates of end point in perpendicular direction
      * @return a String in the format "Lx,y"
      */
     public String lineTo(final double x, final double y) {
         return this.lineTo(this.curvePoint(x, y));
     }
 
+    /**
+     * Creates a new SVG path
+     */
     public void startPath() {
         this.path = new StringBuilder();
     }
 
+    /**
+     * Returns the currently generated path
+     * @return currently generated path
+     */
     public String getPath() {
         return "<path " + (this.id != null && this.id != "" ? "id=\"" + this.id + "\" " : "") + "class=\"a\" d=\"" + this.path.toString() + "\"/>\n";
     }
 
+    /**
+     * Returns the currently generated path and clears it from memory
+     * @return currently generated path
+     */
     public String getPathAndClear() {
         String path = this.getPath();
         this.path.delete(0, this.path.length());
@@ -148,21 +184,40 @@ public class SVGHelper {
         return path;
     }
 
+    /**
+     * Returns end point of relative coordinates
+     * @return end point of relative coordinates
+     */
     public Vector getEndPoint() {
         return endPoint;
     }
 
+    /**
+     * Returns start point of relative coordinates
+     * @return start point of relative coordinates
+     */
     public Vector getStartPoint() {
         return startPoint;
     }
 
+    /**
+     * Returns horizontal unit vector for relative coordinates
+     * @return horizontal unit vector
+     */
     public Vector getUnitVectorX() {
         return unitVectorX;
     }
 
+    /**
+     * Returns vertical unit vector for relative coordinates
+     * @return vertical unit vector
+     */
     public Vector getUnitVectorY() {
         return unitVectorY;
     }
+
+
+
 
     public String getId() {
         return id;
